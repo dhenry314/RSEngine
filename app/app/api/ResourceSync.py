@@ -19,7 +19,7 @@ class ResourceSync(Resource):
         Session = sessionmaker(bind=model.engine)
         self.session = Session()
         self.extension = None
-        self.defaultResourceUnit = self.config.defaultResourceUnit
+        self.defaultResourceUnit = int(self.config.defaultResourceUnit)
         self.defaultDateUnit = self.config.defaultDateUnit
         self.resCnt = 0
         
@@ -202,8 +202,8 @@ class ResourceSync(Resource):
     def parseDates(self,rawDate=None):
         dateInfo = {}
         dateLevel = "day"
-        dateLevelOffset = 10
-        queryDateOffset = 7
+        dateLevelOffset = 7 
+        queryDateOffset = 10
         uriDate1 = None
         now = datetime.now()
         day = 1
@@ -264,8 +264,8 @@ class ResourceSync(Resource):
         hour = date1.hour
         minute = date1.minute
         if dateLevel == "month":
-            dateLevelOffset = 7
-            queryDateOffset = 10
+            dateLevelOffset = 4
+            queryDateOffset = 7
             day2 = 1
             year2 = date1.year
             month2 = date1.month + 1
@@ -275,16 +275,16 @@ class ResourceSync(Resource):
             isoDate2 = date2.isoformat()
         else:
             if dateLevel == "day":
-                dateLevelOffset = 10
-                queryDateOffset = 13
+                dateLevelOffset = 7 
+                queryDateOffset = 10
                 diff1 = timedelta(days=1)
             if dateLevel == "hour":
-                dateLevelOffset = 13
-                queryDateOffset = 16
+                dateLevelOffset = 10
+                queryDateOffset = 13
                 diff1 = timedelta(hours=1)
             if dateLevel == "minute":
-                dateLevelOffset = 16
-                queryDateOffset = 19
+                dateLevelOffset = 13
+                queryDateOffset = 16
                 diff1 = timedelta(minutes=1)
             date2 = date1 + diff1
             isoDate2 = date2.isoformat()
@@ -301,8 +301,9 @@ class ResourceSync(Resource):
                     if queryDateOffset >= 19:
                         uriDate1 = uriDate1 + "{:02}".format(minute)
         dateInfo = {'year':year,'month':month,'day':day,'hour':hour,'minute':minute,
-			'isoDate1':isoDate1,'isoDate2':isoDate2, 'dateLevel':dateLevel, 'dateLevelOffset': dateLevelOffset,
-			'queryDateOffset':queryDateOffset,'uriDate1':uriDate1,'uriDate2':uriDate2}
+		'isoDate1':isoDate1,'isoDate2':isoDate2, 'dateLevel':dateLevel, 
+		'dateLevelOffset': dateLevelOffset,
+		'queryDateOffset':queryDateOffset,'uriDate1':uriDate1,'uriDate2':uriDate2}
         return dateInfo
         
     def getChangeList(self,capLower,sourceNamespace,setNamespace):
@@ -338,6 +339,7 @@ class ResourceSync(Resource):
                 abort(404, message="Capability {} doesn't exist".format(capLower))
         date1 = dp.parse(dateInfo['isoDate1'])
         date2 = dp.parse(dateInfo['isoDate2'])
+
         if not pageRaw:
             resCnt = self.session.query(model.Resources).filter(
                 model.Resources.sourceNamespace == sourceNamespace,
@@ -370,9 +372,10 @@ class ResourceSync(Resource):
         return self.handleResponse(changeList,200)
 
     def getChangeListSubIndex(self,capLower,sourceNamespace,setNamespace,dateInfo):
-        baseURL = str(self.baseURI) + "/RS/" + str(sourceNamespace) + "/" + str(setNamespace) + "/" + str(capLower) + "_"
+        baseURL = str(self.baseURI) + "/RS/" + str(sourceNamespace)
+        baseURL = baseURL + "/" + str(setNamespace) + "/" + str(capLower) + "_"
         changeListIndex = self.initSitemapIndex("changelist",sourceNamespace,setNamespace)
-        queryStr = "SELECT count(*) as recCount, LEFT(lastmod," + str(dateInfo['queryDateOffset']) +") as subDate FROM `resources` "
+        queryStr = "SELECT count(*) as recCount, substr(lastmod,1," + str(dateInfo['queryDateOffset']) +") as subDate FROM `resources` "
         queryStr = queryStr + " WHERE lastmod > '" + str(dateInfo['isoDate1']) + "' "
         queryStr = queryStr + " AND lastmod < '" + str(dateInfo['isoDate2']) + "' GROUP BY subDate"
         sql = text( queryStr )
@@ -395,8 +398,11 @@ class ResourceSync(Resource):
         dateInfo = self.parseDates()
         baseURL = str(self.baseURI) + "/RS/" + str(sourceNamespace) + "/" + str(setNamespace) + "/changelist_"
         changeListIndex = self.initSitemapIndex("changelist",sourceNamespace,setNamespace)
-        queryStr = "SELECT count(*) as recCount, LEFT(lastmod," + str(dateInfo['dateLevelOffset']) +") as subDate FROM `resources` "
-        queryStr = queryStr + " WHERE sourceNamespace = '" + str(sourceNamespace) + "' AND setNamespace = '" + str(setNamespace) + "' "
+        queryStr = "SELECT count(*) as recCount, "
+        queryStr = queryStr + " substr(lastmod,1," + str(dateInfo['dateLevelOffset']) + ") "
+        queryStr = queryStr + " as subDate FROM `resources` "
+        queryStr = queryStr + " WHERE sourceNamespace = '" + str(sourceNamespace)
+        queryStr = queryStr + "' AND setNamespace = '" + str(setNamespace) + "' "
         queryStr = queryStr +  " GROUP BY subDate"
         sql = text( queryStr )
         dateResults = model.engine.execute(sql)
@@ -404,10 +410,10 @@ class ResourceSync(Resource):
         for dateResult in dateResults:
             nextDateInfo = self.parseDates(dateResult.subDate)
             nextURL = {
-						"loc": baseURL + str(nextDateInfo['uriDate1'] + ".xml"), 
-						"rs:md": { "@from": nextDateInfo['isoDate1'], "@until": nextDateInfo['isoDate2']}, 
-						"rs:ln": { "@rel":"alternate", "@href": baseURL + str(nextDateInfo['uriDate1']) + ".json", "@type": "application/json"}
-					  }
+              "loc": baseURL + str(nextDateInfo['uriDate1'] + ".xml"), 
+              "rs:md": { "@from": nextDateInfo['isoDate1'], "@until": nextDateInfo['isoDate2']}, 
+              "rs:ln": { "@rel":"alternate", "@href": baseURL + str(nextDateInfo['uriDate1']) + ".json", "@type": "application/json"}
+            }
             sitemaps.append(nextURL)
         changeListIndex['sitemapindex']['sitemap'] = sitemaps
         changeListIndex['sitemapindex']['rs:md']['@from'] = dateInfo['isoDate1']

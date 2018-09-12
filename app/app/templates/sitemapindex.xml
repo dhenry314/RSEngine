@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:rs="http://www.openarchives.org/rs/terms/" >
+    {% if ln %}
+        <rs:ln
+        {% if ln['@rel'] %}
+            rel="{{ln['@rel']}}"
+        {% endif %}
+        {% if ln['@href'] %}
+            href="{{ln['@href']}}"
+        {% endif %}
+        ></rs:ln>
+    {% endif %}
+    {% if md %}
+        <rs:md 
+        {% if md['@capability'] %} 
+            capability="{{md['@capability']}}"
+        {% endif %} 
+        {% if md['@at'] %}
+            at="{{md['@at']}}"
+        {% endif %} 
+        {% if md['@completed'] %}    
+            completed="{{md['@completed']}}"
+        {% endif %}    
+        {% if md['@from'] %}    
+            from="{{md['@from']}}"
+        {% endif %}    
+        {% if md['@until'] %}    
+            until="{{md['@until']}}"
+        {% endif %}    
+        ></rs:md>
+    {% endif %}
+    
+    {% for sitemap in sitemaps %}
+    <sitemap>
+        <loc>{{sitemap.loc|e}}</loc>
+        {% if sitemap['rs:md'] %}
+            <rs:md
+                {% if sitemap['rs:md']['@at'] %} 
+                    at="{{sitemap['rs:md']['@at']}}"
+                {% endif %}
+                {% if sitemap['rs:md']['@from'] %}    
+                    from="{{sitemap['rs:md']['@from']}}"
+                {% endif %}    
+                {% if sitemap['rs:md']['@until'] %}    
+                    until="{{sitemap['rs:md']['@until']}}"
+                {% endif %}  
+            ></rs:md>
+        {% endif %}
+        {% if sitemap['rs:ln'] %}
+            <rs:ln
+                {% if sitemap['rs:ln']['@rel'] %}
+                    rel="{{sitemap['rs:ln']['@rel']}}"
+                {% endif %}
+                {% if sitemap['rs:ln']['@href'] %}
+                    href="{{sitemap['rs:ln']['@href']}}"
+                {% endif %}
+                {% if sitemap['rs:ln']['@type'] %}
+                    type="{{sitemap['rs:ln']['@type']}}"
+                {% endif %}
+            ></rs:ln>
+        {% endif %}
+    </sitemap>
+    {% endfor %}
+</sitemapindex>
