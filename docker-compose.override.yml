@@ -4,14 +4,16 @@ services:
     volumes:
       - rs-vol1:/app/data
     ports:
-      - "8080:80"
+      - "81:80"
     environment:
       - FLASK_APP=app/main.py
       - FLASK_DEBUG=1
+      - DB_URI=sqlite:////app/data/RSendpoint.db
+      - BASE_URI=http://localhost:81
+      - HASH_ALGORITHM=md5
+      - RESOURCE_UNIT=1000
+      - DATE_UNIT=day
       - 'RUN=flask run --host=0.0.0.0 --port=80'
-    # command: flask run --host=0.0.0.0 --port=80
-    # Infinite loop, to keep it alive, for debugging
-    # command: bash -c "while true; do echo 'sleeping...' && sleep 10; done"
 
 volumes:
    rs-vol1:
