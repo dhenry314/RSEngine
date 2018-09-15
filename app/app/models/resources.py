@@ -110,6 +110,8 @@ class Resources(Resource):
         
     def add(self,uri,source_namespace,set_namespace):
         existingRes = self.getByURI(uri)
+        if existingRes:
+            return marshal(existingRes,resource_fields)
         Rstatus = "created"
         myResource = None
         try:
