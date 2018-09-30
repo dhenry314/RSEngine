@@ -3,6 +3,7 @@ services:
   web:
     volumes:
       - rs-vol1:/app/data
+      - rs-vol2:/app/static
     ports:
       - "81:80"
     environment:
@@ -17,3 +18,4 @@ services:
 
 volumes:
    rs-vol1:
+   rs-vol2:
