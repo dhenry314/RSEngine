@@ -12,6 +12,7 @@ class Resources(Base):
     ID = Column(Integer, nullable=False, primary_key=True)
     sourceNamespace = Column(String(256), nullable=False)
     setNamespace = Column(String(256), nullable=False)
+    batchTag = Column(String(256))
     status = Column(String(20), default='created')
     lastmod = Column(DateTime, default=datetime.datetime.utcnow)
     URI = Column(String(767), nullable=False)

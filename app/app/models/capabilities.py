@@ -1,4 +1,8 @@
 import sys
+import os
+from datetime import date, datetime
+from zipfile import ZipFile
+import json
 from app.models import model
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, exc
@@ -9,6 +13,7 @@ parser.add_argument('uri')
 parser.add_argument('sourceNamespace')
 parser.add_argument('setNamespace')
 parser.add_argument('capabilityType')
+parser.add_argument('batchTag')
 parser.add_argument('offset',type=int)
 parser.add_argument('count',type=int)
 
@@ -26,6 +31,7 @@ class Capabilities(Resource):
         self.config = kwargs['config']
         self.defaultResourceUnit = self.config.defaultResourceUnit
         self.baseURI = self.config.baseURI
+        self.staticFiles = self.config.staticFiles
         model.engine = create_engine(self.config.db['uri'])
         model.Base.metadata.create_all(model.engine)
         Session = sessionmaker(bind=model.engine)
@@ -53,6 +59,12 @@ class Capabilities(Resource):
         
     def post(self):
         args = parser.parse_args()
+        #handle dump creation as necessary
+        if 'batchTag' in args:
+            try:
+                return self.createDump(args['batchTag'],args['sourceNamespace'],args['setNamespace'])
+            except Exception as e:
+                abort(500, message=str(e))
         capability = self.add( args['uri'], args['sourceNamespace'], args['setNamespace'], args['capabilityType'])
         return self.handleCapability(capability)
         
@@ -98,19 +110,48 @@ class Capabilities(Resource):
            return False
         return result
         
-    def add(self,uri,source_namespace,set_namespace,capabilityType):
+    def add(self,uri,source_namespace,set_namespace,capabilityType, capParams = None):
         existingCap = self.getByURI(uri)
         if existingCap:
             abort(404, message="Capability {} already exists")
         myCap = model.Capabilities()
+        if capParams:
+            if not isinstance(capParams,str):
+                capParams = json.dumps(capParams)
         capProps = {
                 'sourceNamespace':source_namespace,
                 'setNamespace':set_namespace,
                 'URI':uri,
-                'capabilityType': capabilityType
+                'capabilityType': capabilityType,
+                'capParams': capParams
         }
         for key, value in capProps.items():
             setattr(myCap, key, value)
         capID = model.commitItem(self.session,myCap)
         myCap.ID = capID
         return myCap
+    
+    def createDump(self,batchTag,sourceNamespace,setNamespace):
+        if not batchTag or not sourceNamespace or not setNamespace:
+            raise KeyError("Missing required params to createDump: batchTag, sourceNamespace, setNamespace")
+        setPath = str(self.staticFiles) + "/" + str(sourceNamespace) + "/" + str(setNamespace) 
+        batchPath = str(setPath) + "/" + str(batchTag)
+        if not os.path.isdir(batchPath):
+            raise ValueError("No batch directory found at " + batchPath)
+        file_paths = []
+        for root, directories, files in os.walk(batchPath): 
+            for filename in files: 
+                # join the two strings in order to form the full filepath. 
+                filepath = os.path.join(root, filename)
+                file_paths.append(filepath)
+        zipPath = str(setPath) + "/" + str(batchTag) + ".zip"
+        with ZipFile(zipPath,'w') as zip: 
+            for file in file_paths:
+                arcPath = file.replace(setPath,'')
+                zip.write(file,arcPath)
+        capURI = str(self.baseURI) + "/static/" + str(sourceNamespace) + "/" + str(setNamespace) + "/" + str(batchTag) + ".zip"
+        isoDate = datetime.now().isoformat()
+        capParams = {"at": isoDate, "completed": isoDate}
+        capability = self.add( capURI, sourceNamespace, setNamespace, 'resourceDump', capParams)
+        return self.handleCapability(capability)
+

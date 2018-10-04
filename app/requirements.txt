@@ -5,3 +5,5 @@ requests
 urllib3
 datetime
 python-dateutil
+numpy
+json

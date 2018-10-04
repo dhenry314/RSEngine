@@ -8,5 +8,6 @@ class appConfig:
     baseURI = os.environ['BASE_URI']
     defaultResourceUnit = os.environ['RESOURCE_UNIT']
     defaultDateUnit = os.environ['DATE_UNIT']
+    staticFiles = os.environ['STATIC_FILES']
 
 

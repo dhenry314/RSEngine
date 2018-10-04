@@ -1,8 +1,10 @@
 import sys
+import os
 from app.models import model
 import requests
 import urllib3
 import hashlib
+import numpy as np
 from datetime import date, datetime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
@@ -12,12 +14,14 @@ parser = reqparse.RequestParser()
 parser.add_argument('uri')
 parser.add_argument('sourceNamespace')
 parser.add_argument('setNamespace')
+parser.add_argument('batchTag')
 parser.add_argument('offset',type=int)
 parser.add_argument('count',type=int)
 
 resource_fields = {
     "sourceNamespace": fields.String,
     "setNamespace": fields.String,
+    "batchTag": fields.String,
     "ID": fields.Integer,
     "status": fields.String,
     "lastmod": fields.String,
@@ -32,6 +36,7 @@ class Resources(Resource):
         self.defaultResourceUnit = self.config.defaultResourceUnit
         self.baseURI = self.config.baseURI
         self.hashAlgorithm = self.config.hashAlgorithm
+        self.staticFiles = self.config.staticFiles
         model.engine = create_engine(self.config.db['uri'])
         model.Base.metadata.create_all(model.engine)
         Session = sessionmaker(bind=model.engine)
@@ -58,9 +63,12 @@ class Resources(Resource):
         return results,200
         
     def post(self):
+        batchTag = None
         args = parser.parse_args()
+        if 'batchTag' in args:
+            batchTag = args['batchTag']
         try:
-            resource = self.add( args['uri'], args['sourceNamespace'], args['setNamespace'])
+            resource = self.add( args['uri'], args['sourceNamespace'], args['setNamespace'], batchTag)
         except ValueError as e:
             abort(404, message=str(e))
         return resource
@@ -108,14 +116,14 @@ class Resources(Resource):
             return False
         return result
         
-    def add(self,uri,source_namespace,set_namespace):
+    def add(self,uri,source_namespace,set_namespace,batchTag=None):
         existingRes = self.getByURI(uri)
         if existingRes:
             return marshal(existingRes,resource_fields)
         Rstatus = "created"
         myResource = None
         try:
-            uriContents = self.getRequestContent(uri)
+            uriContents, ext = self.getRequestContent(uri)
         except ValueError as e:
             raise ValueError(str(e))
         contentHash = self.getHash(uriContents,self.hashAlgorithm)
@@ -130,6 +138,7 @@ class Resources(Resource):
         resProps = {
                 'sourceNamespace':source_namespace,
                 'setNamespace':set_namespace,
+                'batchTag': batchTag,
                 'status':Rstatus,
                 'URI':uri,
                 'lastmod':datetime.today(), 
@@ -139,8 +148,32 @@ class Resources(Resource):
             setattr(myResource, key, value)
         resID = model.commitItem(self.session,myResource)
         myResource.ID = resID
+        self.cacheResult(myResource,uriContents,ext)
         return marshal(myResource,resource_fields)
-        
+
+    def cacheResult(self,resource,contents,ext):
+        #set initial path
+        batchPath = str(self.staticFiles) + "/" + str(resource.sourceNamespace) + "/" + str(resource.setNamespace) + "/" + str(resource.batchTag)
+        IDName = np.base_repr(resource.ID, 36)
+        IDName = IDName.zfill(4)
+        relativeDir = "/" + str(IDName[0]) + "/" + str(IDName[1]) + "/" + str(IDName[2]) + "/" + str(IDName[3])
+        path = batchPath + relativeDir
+        if not os.path.isdir(path):
+            os.makedirs( path )
+        relativePath = str(relativeDir) + "/" + str(IDName) + "." + str(ext)
+        manifestLine = "<" + str(resource.URI) + "><" + str(relativePath) + "><" + str(resource.hashVal) + ">\n"
+        fullPath = str(path) + "/" + str(IDName) + "." + str(ext)
+        f = open(fullPath, "w")
+        f.write(contents) 
+        f.close()
+        manifestPath = str(batchPath) + "/manifest"
+        if not os.path.isfile(manifestPath):
+            f1 = open(manifestPath,"w")
+        else:
+            f1 = open(manifestPath, "a")
+        f1.write(manifestLine)
+        f1.close()
+    
     def getRequestContent(self,uri,tries=0):
         try:
             r = requests.get(uri)
@@ -157,7 +190,15 @@ class Resources(Resource):
             return getRequestContent(uri,tries+1)
         if r.status_code != 200:
             raise ValueError("Could not get Content from "  + str(uri))
-        return r.text
+        contentType = r.headers['content-type']
+        CTParts = contentType.split(";")
+        mimeType = CTParts[0]
+        MTParts = mimeType.split("/")
+        ext = MTParts[1]
+        if mimeType in ['text/html','text/plain','text/css','text/csv','application/json','application/javascript','application/xhtml+xml','application/xml']:
+            return r.text, ext
+        else:
+            return r.content, ext
     
     def getHash(self,hashable,ha):
         hashable = hashable.encode('utf-8')
