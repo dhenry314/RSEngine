@@ -125,7 +125,7 @@ class Resources(Resource):
             return False
         return result
         
-    def add(self,uri,source_namespace,set_namespace,batchTag=None):
+    def add(self,uri,sourceNamespace,setNamespace,batchTag=None):
         existingRes = self.getExisting(uri,sourceNamespace,setNamespace)
         if existingRes:
             return marshal(existingRes,resource_fields)
@@ -145,8 +145,8 @@ class Resources(Resource):
         else:
             myResource = model.Resources()
         resProps = {
-                'sourceNamespace':source_namespace,
-                'setNamespace':set_namespace,
+                'sourceNamespace':sourceNamespace,
+                'setNamespace':setNamespace,
                 'batchTag': batchTag,
                 'status':Rstatus,
                 'URI':uri,
