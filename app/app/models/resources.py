@@ -71,7 +71,6 @@ class Resources(Resource):
             resource = self.add( args['uri'], args['sourceNamespace'], args['setNamespace'], batchTag)
         except ValueError as e:
             abort(404, message=str(e))
-        return resource
         return self.handleResource(resource)
         
     def delete(self,resID=None):
@@ -108,6 +107,16 @@ class Resources(Resource):
            return False
         return result
         
+    def getExisting(self,uri,sourceNamespace,setNamespace):
+        result = self.session.query(model.Resources).filter(
+            model.Resources.URI == uri,
+            model.Resources.sourceNamespace == sourceNamespace,
+            model.Resources.setNamespace == setNamespace
+        ).first()
+        if not result:
+           return False
+        return result
+        
     def getByID(self,resID):
         result = self.session.query(model.Resources).filter(
             model.Resources.ID == resID
@@ -117,7 +126,7 @@ class Resources(Resource):
         return result
         
     def add(self,uri,source_namespace,set_namespace,batchTag=None):
-        existingRes = self.getByURI(uri)
+        existingRes = self.getExisting(uri,sourceNamespace,setNamespace)
         if existingRes:
             return marshal(existingRes,resource_fields)
         Rstatus = "created"

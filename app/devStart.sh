@@ -6,4 +6,5 @@ export BASE_URI=http://localhost:81
 export HASH_ALGORITHM=md5
 export RESOURCE_UNIT=1000
 export DATE_UNIT=day
+export STATIC_FILES=/tmp/RSEngine/static/
 /usr/local/bin/flask run --host=0.0.0.0 --port=81
