@@ -173,7 +173,10 @@ class Resources(Resource):
         manifestLine = "<" + str(resource.URI) + "><" + str(relativePath) + "><" + str(resource.hashVal) + ">\n"
         fullPath = str(path) + "/" + str(IDName) + "." + str(ext)
         f = open(fullPath, "w")
-        f.write(contents) 
+        try:
+            f.write(contents)
+        except TypeError:
+            f.write(contents.decode("UTF-8")) 
         f.close()
         manifestPath = str(batchPath) + "/manifest"
         if not os.path.isfile(manifestPath):
@@ -210,7 +213,10 @@ class Resources(Resource):
             return r.content, ext
     
     def getHash(self,hashable,ha):
-        hashable = hashable.encode('utf-8')
+        try:
+            hashable = hashable.encode('utf-8')
+        except AttributeError as e:
+            pass
         if ha == "md5":
             m = hashlib.md5()
         elif ha == "sha1":
