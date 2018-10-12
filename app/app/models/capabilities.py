@@ -78,7 +78,7 @@ class Capabilities(Resource):
             if not os.path.isdir(batchPath):
                 abort(500,message="No batch directory found at " + batchPath)
             try:
-                QMessage_id = tasks.createDump.send(batchPath).message_id
+                QMessage_id = tasks.createDump.send(batchPath,setPath,batchTag,sourceNamespace,setNamespace).message_id
             except Exception as e:
                 abort(500, message=str(e))
             uri = batchPath.replace(str(self.staticFiles),str(self.baseURI) + "/static/")

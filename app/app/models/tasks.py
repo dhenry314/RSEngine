@@ -12,7 +12,7 @@ redis_broker = RedisBroker(host="redis", port=6379)
 dramatiq.set_broker(redis_broker)
 
 @dramatiq.actor()  
-def createDump(batchTag,sourceNamespace,setNamespace):
+def createDump(batchPath,setPath,batchTag,sourceNamespace,setNamespace):
     file_paths = []
     for root, directories, files in os.walk(batchPath): 
         for filename in files: 
