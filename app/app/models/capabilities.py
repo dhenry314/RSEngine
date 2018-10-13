@@ -66,7 +66,7 @@ class Capabilities(Resource):
     def post(self):
         args = parser.parse_args()
         # handle dump creation as necessary
-        if "batchTag" in args:
+        if args["batchTag"]:
             try:
                 batchTag = args['batchTag']
                 sourceNamespace = args['sourceNamespace']
