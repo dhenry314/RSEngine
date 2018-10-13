@@ -1,6 +1,6 @@
 import sys
 import os
-from app.models import model
+
 import requests
 import urllib3
 import hashlib
@@ -8,7 +8,10 @@ import numpy as np
 from datetime import date, datetime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from flask_restful import Api, Resource, reqparse, abort, marshal, fields #yum! Frango mints!
+from flask_restful import Api, Resource, reqparse, abort, marshal, fields
+
+from app.models import model
+import app.models.Utils as Utils
 
 parser = reqparse.RequestParser()
 parser.add_argument('uri')
@@ -132,7 +135,7 @@ class Resources(Resource):
         Rstatus = "created"
         myResource = None
         try:
-            uriContents, ext = self.getRequestContent(uri)
+            uriContents, ext = Utils.getContent(uri)
         except ValueError as e:
             raise ValueError(str(e))
         contentHash = self.getHash(uriContents,self.hashAlgorithm)
@@ -185,33 +188,7 @@ class Resources(Resource):
             f1 = open(manifestPath, "a")
         f1.write(manifestLine)
         f1.close()
-    
-    def getRequestContent(self,uri,tries=0):
-        try:
-            r = requests.get(uri)
-        except requests.exceptions.HTTPError as e:
-            raise ValueError("Could not get contents from " + str(uri) + " HTTPError: " + str(e))
-        except requests.exceptions.RequestException as e:
-            raise ValueError("Could not get contents from " + str(uri) + " RequestException: " + str(e))
-        except requests.exceptions.TooManyRedirects:
-            raise ValueError("Too many redirects for " + str(uri))
-        except requests.exceptions.Timeout:
-            if tries > 4:
-                raise ValueError("Could not get content from " + str(uri))
-            sleep(2)
-            return getRequestContent(uri,tries+1)
-        if r.status_code != 200:
-            raise ValueError("Could not get Content from "  + str(uri))
-        contentType = r.headers['content-type']
-        CTParts = contentType.split(";")
-        mimeType = CTParts[0]
-        MTParts = mimeType.split("/")
-        ext = MTParts[1]
-        if mimeType in ['text/html','text/plain','text/css','text/csv','application/json','application/javascript','application/xhtml+xml','application/xml']:
-            return r.text, ext
-        else:
-            return r.content, ext
-    
+       
     def getHash(self,hashable,ha):
         try:
             hashable = hashable.encode('utf-8')

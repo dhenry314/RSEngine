@@ -9,5 +9,4 @@ class appConfig:
     defaultResourceUnit = os.environ['RESOURCE_UNIT']
     defaultDateUnit = os.environ['DATE_UNIT']
     staticFiles = os.environ['STATIC_FILES']
-
-
+    userAgent = os.environ['USER_AGENT']

@@ -15,6 +15,7 @@ services:
       - RESOURCE_UNIT=1000
       - DATE_UNIT=day
       - STATIC_FILES=/app/static/
+      - USER_AGENT=Mozilla/5.0
       - 'RUN=flask run --host=0.0.0.0 --port=80'
       
 
