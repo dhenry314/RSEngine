@@ -167,13 +167,13 @@ class Resources(Resource):
         #set initial path
         batchPath = str(self.staticFiles) + "/" + str(resource.sourceNamespace) + "/" + str(resource.setNamespace) + "/" + str(resource.batchTag)
         IDName = np.base_repr(resource.ID, 36)
-        IDName = IDName.zfill(4)
-        relativeDir = "/" + str(IDName[0]) + "/" + str(IDName[1]) + "/" + str(IDName[2]) + "/" + str(IDName[3])
+        IDPath = IDName.zfill(4)
+        relativeDir = "/" + str(IDPath[0]) + "/" + str(IDPath[1]) + "/" + str(IDPath[2]) + "/" + str(IDPath[3])
         path = batchPath + relativeDir
         if not os.path.isdir(path):
             os.makedirs( path )
         relativePath = str(relativeDir) + "/" + str(IDName) + "." + str(ext)
-        manifestLine = "<" + str(resource.URI) + "><" + str(relativePath) + "><" + str(resource.hashVal) + ">\n"
+        manifestLine = "<" + str(resource.URI) + "><" + str(relativePath) + "><" + str(resource.hashVal) + "></resource/" + str(resource.ID) + ">\n"
         fullPath = str(path) + "/" + str(IDName) + "." + str(ext)
         f = open(fullPath, "w")
         try:
@@ -184,7 +184,7 @@ class Resources(Resource):
         manifestPath = str(batchPath) + "/manifest"
         if not os.path.isfile(manifestPath):
             f1 = open(manifestPath,"w")
-        else:
+        else: 
             f1 = open(manifestPath, "a")
         f1.write(manifestLine)
         f1.close()
