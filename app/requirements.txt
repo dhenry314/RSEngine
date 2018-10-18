@@ -6,3 +6,4 @@ urllib3
 datetime
 python-dateutil
 numpy
+python-magic
