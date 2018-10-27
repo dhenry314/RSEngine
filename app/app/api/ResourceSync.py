@@ -429,6 +429,8 @@ class ResourceSync(Resource):
             lastmod = record.lastmod.isoformat()
         resource['lastmod'] = '{0:%Y-%m-%dT%H:%M:%S}'.format(record.lastmod)
         resource['rs:md'] = {"hash": record.hashVal}
+        resourceURL = "/resource/" + str(record.ID)
+        resource['rs:ln'] = {"rel":"describedby","href":resourceURL}
         return resource
         
     def getCapabilityDict(self,record):
