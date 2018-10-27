@@ -4,6 +4,7 @@ from datetime import date, datetime
 import json
 from app.models import model, tasks
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from sqlalchemy import create_engine, exc
 from flask_restful import (
     Api,
@@ -38,7 +39,7 @@ class Capabilities(Resource):
         self.defaultResourceUnit = self.config.defaultResourceUnit
         self.baseURI = self.config.baseURI
         self.staticFiles = self.config.staticFiles
-        model.engine = create_engine(self.config.db["uri"])
+        model.engine = create_engine(self.config.db['uri'],connect_args={'check_same_thread': False},poolclass=StaticPool, echo=True)
         model.Base.metadata.create_all(model.engine)
         Session = sessionmaker(bind=model.engine)
         self.session = Session()

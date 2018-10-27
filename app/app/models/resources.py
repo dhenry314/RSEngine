@@ -7,6 +7,7 @@ import hashlib
 import numpy as np
 from datetime import date, datetime
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from sqlalchemy import create_engine
 from flask_restful import Api, Resource, reqparse, abort, marshal, fields
 
@@ -40,7 +41,7 @@ class Resources(Resource):
         self.baseURI = self.config.baseURI
         self.hashAlgorithm = self.config.hashAlgorithm
         self.staticFiles = self.config.staticFiles
-        model.engine = create_engine(self.config.db['uri'])
+        model.engine = create_engine(self.config.db['uri'],connect_args={'check_same_thread': False},poolclass=StaticPool, echo=True)
         model.Base.metadata.create_all(model.engine)
         Session = sessionmaker(bind=model.engine)
         self.session = Session()

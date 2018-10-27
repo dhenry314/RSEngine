@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 from flask import make_response, jsonify, render_template
 from flask_restful import Resource, abort
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from sqlalchemy import create_engine, text
 from math import ceil
 import dateutil.parser as dp
@@ -14,7 +15,7 @@ class ResourceSync(Resource):
     def __init__(self,**kwargs):
         self.config = kwargs['config']
         self.baseURI = self.config.baseURI
-        model.engine = create_engine(self.config.db['uri'])
+        model.engine = create_engine(self.config.db['uri'],connect_args={'check_same_thread': False},poolclass=StaticPool, echo=True)
         model.Base.metadata.create_all(model.engine)
         Session = sessionmaker(bind=model.engine)
         self.session = Session()
