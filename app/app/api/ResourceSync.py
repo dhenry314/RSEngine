@@ -14,7 +14,9 @@ class ResourceSync(Resource):
 
     def __init__(self,**kwargs):
         self.config = kwargs['config']
-        self.baseURI = request.host
+        self.baseURI = request.host_url
+        #remove trailing slash
+        self.baseURI = self.baseURI[:-1]
         model.engine = create_engine(self.config.db['uri'],connect_args={'check_same_thread': False},poolclass=StaticPool, echo=True)
         model.Base.metadata.create_all(model.engine)
         Session = sessionmaker(bind=model.engine)

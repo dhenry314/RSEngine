@@ -38,7 +38,9 @@ class Capabilities(Resource):
     def __init__(self, **kwargs):
         self.config = kwargs["config"]
         self.defaultResourceUnit = self.config.defaultResourceUnit
-        self.baseURI = request.host
+        self.baseURI = request.host_url
+        #remove trailing slash
+        self.baseURI = self.baseURI[:-1]
         self.staticFiles = self.config.staticFiles
         model.engine = create_engine(self.config.db['uri'],connect_args={'check_same_thread': False},poolclass=StaticPool, echo=True)
         model.Base.metadata.create_all(model.engine)
