@@ -9,6 +9,7 @@ from datetime import date, datetime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlalchemy import create_engine
+from flask import request
 from flask_restful import Api, Resource, reqparse, abort, marshal, fields
 
 from app.models import model
@@ -38,7 +39,7 @@ class Resources(Resource):
     def __init__(self,**kwargs):
         self.config = kwargs['config']
         self.defaultResourceUnit = self.config.defaultResourceUnit
-        self.baseURI = self.config.baseURI
+        self.baseURI = request.host
         self.hashAlgorithm = self.config.hashAlgorithm
         self.staticFiles = self.config.staticFiles
         model.engine = create_engine(self.config.db['uri'],connect_args={'check_same_thread': False},poolclass=StaticPool, echo=True)

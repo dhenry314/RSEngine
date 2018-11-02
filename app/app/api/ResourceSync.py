@@ -2,7 +2,7 @@ import sys
 from ..models import model
 import json
 from datetime import date, datetime, timedelta
-from flask import make_response, jsonify, render_template
+from flask import make_response, jsonify, render_template, request
 from flask_restful import Resource, abort
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -14,7 +14,7 @@ class ResourceSync(Resource):
 
     def __init__(self,**kwargs):
         self.config = kwargs['config']
-        self.baseURI = self.config.baseURI
+        self.baseURI = request.host
         model.engine = create_engine(self.config.db['uri'],connect_args={'check_same_thread': False},poolclass=StaticPool, echo=True)
         model.Base.metadata.create_all(model.engine)
         Session = sessionmaker(bind=model.engine)

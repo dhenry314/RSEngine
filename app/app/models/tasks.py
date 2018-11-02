@@ -12,7 +12,7 @@ redis_broker = RedisBroker(host="redis", port=6379)
 dramatiq.set_broker(redis_broker)
 
 @dramatiq.actor()  
-def createDump(batchPath,setPath,batchTag,sourceNamespace,setNamespace):
+def createDump(batchPath,setPath,batchTag,sourceNamespace,setNamespace,baseURI):
     file_paths = []
     for root, directories, files in os.walk(batchPath): 
         for filename in files: 
@@ -24,5 +24,5 @@ def createDump(batchPath,setPath,batchTag,sourceNamespace,setNamespace):
         for file in file_paths:
             arcPath = file.replace(setPath,'')
             zip.write(file,arcPath)
-    capURI = str(appConfig.baseURI) + "/static/" + str(sourceNamespace) + "/" + str(setNamespace) + "/" + str(batchTag) + ".zip"
+    capURI = str(baseURI) + "/static/" + str(sourceNamespace) + "/" + str(setNamespace) + "/" + str(batchTag) + ".zip"
     return capURI
