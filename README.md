@@ -9,8 +9,10 @@ On DockerHub: https://hub.docker.com/r/climatewalker/rsengine/
 1. Run docker-compose up -d
 2. Post to http://localhost:81/resource with the parameters sourceNamespace, setNamespace, batchTag, and uri
   -- for example:
+  ```
    %>curl -d "sourceNamespace=dhenry&setNamespace=climatewalker&batchTag=20181106&uri=http://climate-walker.org/the-book" \
      -X POST http://localhost:81/resource
+   ```
 3. After posting resources to a given sourceNamespace, setNamespace and batchTag, you can create a dumpfile by posting to capability. 
   -- for example:
   ```
