@@ -17,6 +17,7 @@ On DockerHub: https://hub.docker.com/r/climatewalker/rsengine/
   ```
    %>curl -d "sourceNamespace=dhenry&setNamespace=climatewalker&batchTag=20181106" -X POST http://localhost:81/capability
    ```
+   which returns the uri to the dump file: http://localhost:81/RS/dhenry/climatewalker/20181106.zip 
    -- then add the capability URI with:
    ```
    %>curl -d "sourceNamespace=dhenry&setNamespace=climatewalker&uri=http://localhost:81/RS/dhenry/climatewalker/20181106.zip&capabilityType=dump" -X POST http://localhost:81/capability
