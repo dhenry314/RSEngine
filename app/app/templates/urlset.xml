@@ -6,9 +6,13 @@
     {% for url in urlset %}
     <url>
         <loc>{{url.loc|e}}</loc>
-        <lastmod>{{url.lastmod}}</lastmod>
-        {% if url['rs:md']['@capability'] %}
-            <rs:md capability="{{url['rs:md']['@capability']}}"></rs:md>
+        {% if url.lastmod: %}
+            <lastmod>{{url.lastmod}}</lastmod>
+        {% endif %}
+        {% if 'rs:md' in url: %}
+               {% if url['rs:md']['@capability'] %}
+                   <rs:md capability="{{url['rs:md']['@capability']}}"></rs:md>
+               {% endif %}
         {% endif %}
     </url>
     {% endfor %}
