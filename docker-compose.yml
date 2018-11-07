@@ -1,4 +1,27 @@
-version: '2'
+version: '2.1'
 services:
-  web:
-    build: ./
+  resourcesync:
+    image: climatewalker/rsengine:1.2.0
+    volumes:
+      - rs1:/app/data
+      - rs2:/app/static
+    ports:
+      - 81:80
+    environment:
+      - FLASK_APP=app/main.py
+      - FLASK_DEBUG=1
+      - DB_URI=sqlite:////app/data/RSendpoint.db
+      - HASH_ALGORITHM=md5
+      - RESOURCE_UNIT=1000
+      - DATE_UNIT=day
+      - STATIC_FILES=/app/static/
+      - USER_AGENT=Mozilla/5.0
+      - 'RUN=flask run --host=0.0.0.0 --port=80'
+
+  redis:
+    image: 'redis:3.2.7'
+
+      
+volumes:
+    rs1:
+    rs2:
