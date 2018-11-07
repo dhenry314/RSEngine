@@ -9,10 +9,26 @@
         {% if url.lastmod: %}
             <lastmod>{{url.lastmod}}</lastmod>
         {% endif %}
-        {% if 'rs:md' in url: %}
-               {% if url['rs:md']['@capability'] %}
-                   <rs:md capability="{{url['rs:md']['@capability']}}"></rs:md>
+        {% if 'rs:ln' in url: %}
+               <rs:ln 
+               {% if url['rs:ln']['href'] %}
+                   href="{{url['rs:ln']['href']}}"
                {% endif %}
+               {% if url['rs:ln']['rel'] %}
+                   hash="{{url['rs:ln']['rel']}}"
+               {% endif %}
+               ></rs:ln>
+        {% endif %}
+        {% if 'rs:md' in url: %}
+               <rs:md 
+               {% if url['rs:md']['@capability'] %}
+                   capability="{{url['rs:md']['@capability']}}"
+               {% endif %}
+               {% if url['rs:md']['hash'] %}
+                   hash="{{url['rs:md']['hash']}}"
+               {% endif %}
+               ></rs:md>
+               
         {% endif %}
     </url>
     {% endfor %}
