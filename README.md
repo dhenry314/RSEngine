@@ -13,9 +13,13 @@ On DockerHub: https://hub.docker.com/r/climatewalker/rsengine/
      -X POST http://localhost:81/resource
 3. After posting resources to a given sourceNamespace, setNamespace and batchTag, you can create a dumpfile by posting to capability. 
   -- for example:
+  ```
    %>curl -d "sourceNamespace=dhenry&setNamespace=climatewalker&batchTag=20181106" -X POST http://localhost:81/capability
+   ```
    -- then add the capability URI with:
+   ```
    %>curl -d "sourceNamespace=dhenry&setNamespace=climatewalker&uri=http://localhost:81/RS/dhenry/climatewalker/20181106.zip&capabilityType=dump" -X POST http://localhost:81/capability
+   ```
 4.  You can then retrieve resources using the ResourceSync protocol:
    -- for example:
     http://localhost:81/RS/dhenry/climatewalker/resourcelistindex.xml might return:
