@@ -87,13 +87,14 @@ class Capabilities(Resource):
                 abort(500, message=str(e))
             uri = batchPath.replace(str(self.staticFiles),str(self.baseURI) + "/static/")
             return uri + ".zip"
-        capability = self.add(
-            args["uri"],
-            args["sourceNamespace"],
-            args["setNamespace"],
-            args["capabilityType"],
-        )
-        return self.handleCapability(capability)
+        else:
+            capability = self.add(
+                args["uri"],
+                args["sourceNamespace"],
+                args["setNamespace"],
+                args["capabilityType"],
+            )
+            return self.handleCapability(capability)
 
     def delete(self, capID=None):
         capability = None
