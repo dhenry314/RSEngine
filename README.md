@@ -53,7 +53,7 @@ On DockerHub: https://hub.docker.com/r/climatewalker/rsengine/
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:rs="http://www.openarchives.org/rs/terms/" >
         <rs:md capability="resourcelist"></rs:md>
          <url>
-        <loc>http://climate-walker.org/</loc>
+            <loc>http://climate-walker.org/</loc>
               <lastmod>2018-11-06T12:13:50</lastmod>
                 <rs:ln 
                    href="/resource/1"
@@ -62,10 +62,10 @@ On DockerHub: https://hub.docker.com/r/climatewalker/rsengine/
                 <rs:md 
                    hash="md5:436e47e59d2afcba7aa5d8d9be2a21c3"
                 ></rs:md>              
-    </url>
-    <url>
-       <loc>http://climate-walker.org/the-walk</loc>
-          <lastmod>2018-11-06T12:14:24</lastmod>
+        </url>
+        <url>
+           <loc>http://climate-walker.org/the-walk</loc>
+           <lastmod>2018-11-06T12:14:24</lastmod>
               <rs:ln 
                   href="/resource/2"
                   hash="describedby"
@@ -73,7 +73,7 @@ On DockerHub: https://hub.docker.com/r/climatewalker/rsengine/
               <rs:md 
                   hash="md5:22b9edb71edd611223554e065d193649"
               ></rs:md>
-    </url>
+        </url>
         ...
 6. Opening http://localhost:81/RS/dhenry/climatewalker/capabilitylist.xml shoud return:
       ```xml
