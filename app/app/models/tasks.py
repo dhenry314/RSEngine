@@ -8,7 +8,10 @@ from dramatiq.brokers.redis import RedisBroker
 
 from app.configure import appConfig
 
-redis_broker = RedisBroker(host="redis", port=6379)
+if 'REDIS_HOST' in os.environ:
+    redis_broker = RedisBroker(url=os.environ['REDIS_HOST'])
+else:
+    redis_broker = RedisBroker(host="redis", port=6379)
 dramatiq.set_broker(redis_broker)
 
 @dramatiq.actor()  
