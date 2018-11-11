@@ -439,4 +439,6 @@ class ResourceSync(Resource):
     def getCapabilityDict(self,record):
         capability = {}
         capability['loc'] = record.URI
+        capURL = "/capability/" + str(record.ID)
+        capability['rs:ln'] = {"rel":"describedby","href":capURL}
         return capability
