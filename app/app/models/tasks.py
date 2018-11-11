@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 
 import dramatiq
 import requests
@@ -29,3 +30,30 @@ def createDump(batchPath,setPath,batchTag,sourceNamespace,setNamespace,baseURI):
             zip.write(file,arcPath)
     capURI = str(baseURI) + "/static/" + str(sourceNamespace) + "/" + str(setNamespace) + "/" + str(batchTag) + ".zip"
     return capURI
+    
+@dramatiq.actor()  
+def removeDump(dumpURI,baseURI,staticFiles):
+    staticBase = str(baseURI) + '/static/'
+    if dumpURI.startswith(staticBase):
+        subPath = dumpURI.replace(staticBase,'')
+        zipPath = str(staticFiles) + str(subPath)
+        if os.path.isfile(zipPath):
+            os.remove(zipPath)
+        if '.zip' in zipPath:
+            batchPath = zipPath.replace('.zip','')
+            if os.path.isdir(batchPath):
+                #find manifest
+                manifestPath = str(batchPath) + '/manifest'
+                if os.path.isfile(manifestPath):
+                    with open(manifestPath) as infile:
+                        for line in infile:
+                            parts = line.split("><")
+                            contentPath = str(batchPath) + str(parts[1])
+                            os.remove(contentPath)
+                            resourcePath = parts[3]
+                            resourcePath = resourcePath.replace(">","")
+                            resourceURI = str(baseURI) + str(resourcePath)
+                            requests.delete(resourceURI)
+                    os.remove(manifestPath)
+                shutil.rmtree(batchPath)
+                

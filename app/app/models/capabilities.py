@@ -2,6 +2,7 @@ import sys
 import os
 from datetime import date, datetime
 import json
+
 from app.models import model, tasks
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -105,7 +106,11 @@ class Capabilities(Resource):
         result = model.deleteItem(self.session, capability)
         if not result:
             abort(500, message="Capability could not be deleted!")
-        return {"msg": "capability " + str(capability.URI) + " has been deleted."}
+        try:
+            QMessage_id = tasks.removeDump.send(capability.URI,self.baseURI,self.staticFiles).message_id
+        except Exception as e:
+            abort(500, message=str(e))
+        return {"msg": "capability " + str(capability.URI) + " has been deleted.  Related resources have been queued for deletion."}
 
     def handleCapability(self, capability):
         if not capability:
