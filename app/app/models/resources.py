@@ -134,8 +134,6 @@ class Resources(Resource):
         
     def add(self,uri,sourceNamespace,setNamespace,batchTag=None):
         existingRes = self.getExisting(uri,sourceNamespace,setNamespace)
-        if existingRes:
-            return marshal(existingRes,resource_fields)
         Rstatus = "created"
         myResource = None
         try:
